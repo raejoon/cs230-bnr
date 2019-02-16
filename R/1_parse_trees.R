@@ -1,7 +1,7 @@
 library(tidyverse)
 library(magrittr)
 library(jsonlite)
-source("functions.R")
+source(here::here("R", "functions.R"))
 
 # problem 4 ---------------------------------------------------------------
 trees_4 <-
@@ -19,7 +19,6 @@ trees_4 <-
     select(-file)
 
 traj_4 <- get_traj(here::here("data-raw", "hoc4", "trajectories"))
-
 
 # problem 18 --------------------------------------------------------------
 trees_18 <-
@@ -40,7 +39,7 @@ traj_18 <- get_traj(here::here("data-raw", "hoc18", "trajectories"))
 
 
 # save --------------------------------------------------------------------
-trees_4 %>% write_rds("data-created/trees_4.rds")
+trees_4 %>% write_rds(here::here("data-created", "trees_4.rds"))
 traj_4 %>% write_rds("data-created/traj_4.rds")
 traj_18 %>% write_rds("data-created/traj_18.rds")
 trees_18 %>% write_rds("data-created/trees_18")
