@@ -1,21 +1,21 @@
----
-title: "2_build_matrix"
-output: github_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+2\_build\_matrix
+================
 
 # Goal
 
-For each AST, create a matrix where the rows are the block number the student chose, the columns are the block types, and in each row there is a 1 representing the block that student chose.
+For each AST, create a matrix where the rows are the block number the
+student chose, the columns are the block types, and in each row there is
+a 1 representing the block that student chose.
 
-The number of rows in this matrix needs to be equal to the longest AST we have, so there is an additional block type "blank" which means that AST already ended.
+The number of rows in this matrix needs to be equal to the longest AST
+we have, so there is an additional block type “blank” which means that
+AST already ended.
 
-For example, if an AST included a lone block of move_forward, and the longest AST included only 2 blocks, then the matrix would be the following:
+For example, if an AST included a lone block of move\_forward, and the
+longest AST included only 2 blocks, then the matrix would be the
+following:
 
-```{r message = FALSE}
+``` r
 library(tidyverse)
 
 tribble(
@@ -25,11 +25,17 @@ tribble(
 )
 ```
 
+    ## # A tibble: 2 x 4
+    ##   move_forward turn_left turn_right blank
+    ##          <dbl>     <dbl>      <dbl> <dbl>
+    ## 1            1         0          0     0
+    ## 2            0         0          0     1
+
 # Write a function
 
 Load in data.
 
-```{r}
+``` r
 trees_4 <- 
     read_rds(here::here("data-created", "trees_4.rds")) %>% 
     filter(tree %>% map_lgl(~ "type" %in% names(.)))
@@ -37,7 +43,7 @@ trees_4 <-
 
 Look at all trees to get dimensions of matrix.
 
-```{r warning = FALSE}
+``` r
 # need number of blocks for rows of matrix
 num_rows <- map_int(trees_4$tree, nrow) %>% max()
 
@@ -52,9 +58,10 @@ all_types <-
 num_cols <- nrow(all_types) + 1 # add 1 for blank
 ```
 
-Write a function that takes the sequence of blocks, num_cols, and num_rows of the output matrix and creates the matrix.
+Write a function that takes the sequence of blocks, num\_cols, and
+num\_rows of the output matrix and creates the matrix.
 
-```{r}
+``` r
 ast_blocks_to_matrix <- function(blocks, num_cols, num_rows){
     
     block_names <- c("maze_moveForward", "turnLeft", "turnRight", "blank")
@@ -78,7 +85,7 @@ ast_blocks_to_matrix <- function(blocks, num_cols, num_rows){
 
 # Use that function
 
-```{r}
+``` r
 list_of_ast_matrices <- 
     trees_4$tree %>% 
     map(~ .$type) %>% 
@@ -95,19 +102,15 @@ array_of_ast_matrices <-
 
 Transfer to python
 
-```{r}
+``` r
 library(reticulate)
 py$array_of_ast_matrices <- r_to_py(array_of_ast_matrices)
 ```
 
 Save as .npy file using Python
 
-```{python}
+``` python
 import numpy as np
-
 np.save("../data-created/q4_array_of_ast_matrices.npy", array_of_ast_matrices)
-
 # np.load("data-created/q4_array_of_ast_matrices.npy")
 ```
-
-
