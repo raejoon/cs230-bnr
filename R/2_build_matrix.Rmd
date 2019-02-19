@@ -67,7 +67,7 @@ ast_blocks_to_matrix <- function(blocks, num_cols, num_rows){
     
     ast_df_as_vector <- rep(0, num_rows * num_cols)
     
-    ast_df_as_vector[where_one_is_in_each_row + 4 * (1:num_rows - 1)] <- 1
+    ast_df_as_vector[where_one_is_in_each_row + num_cols * (1:num_rows - 1)] <- 1
     
     ast_df_as_vector %>%
         matrix(ncol = num_cols, byrow = TRUE) %>%
@@ -107,7 +107,9 @@ import numpy as np
 
 np.save("../data-created/q4_array_of_ast_matrices.npy", array_of_ast_matrices)
 
-# np.load("data-created/q4_array_of_ast_matrices.npy")
+# a = np.load("data-created/q4_array_of_ast_matrices.npy")
+
+a.shape
 ```
 
 

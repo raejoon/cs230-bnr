@@ -5,3 +5,10 @@ data-raw/
 .Rproj.user
 
 cs230*
+
+.idea/
+embeddings_understanding.py
+venv/
+
+.gitignore
+.Rhistory
