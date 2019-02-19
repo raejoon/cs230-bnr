@@ -82,6 +82,7 @@ def create_model(num_timestep, num_blocks):
     #Add LSTM layer with 128 hidden units, tanh nonlinearity
     model.add(layers.LSTM(hidden_size, 
                           activation='tanh',
+                          return_sequences=True,
                           input_shape=(num_timestep, num_blocks)))
     
     #Add Dropout
@@ -101,31 +102,10 @@ def create_model(num_timestep, num_blocks):
     return model
 
 
-def create_dummy_model(num_timestep, num_blocks):
-    """ Dummy model to work with. Remove this after merging code with
-    Neeraj.
-    """
-    import keras.models as models
-    model = models.Sequential()
-    model.add(models.layers.LSTM(32, input_shape=(num_timestep, num_blocks)))
-    model.add(Dense(num_blocks, activation="softmax"))
-    
-    model.compile(loss="categorical_crossentropy",
-                  optimizer="rmsprop",
-                  metrics=["accuracy"])
-    return model
-
-
 def train_model(train_matrix, train_labels):
     """ Train the model with the input matrix. """
     
     model.fit(train_matrix, train_labels, epochs=5)
-    
-    pass
-
-
-def train_dummy_model():
-    pass
 
 
 if __name__=="__main__":
@@ -147,8 +127,7 @@ if __name__=="__main__":
     model = create_model(num_timesteps, num_blocks)
 
     # train_matrix model
-    train_matrix = all_matrix[0, :, :]
-    train_labels = validation_matrix[0, :, :]    
+    #train_matrix = all_matrix[0, :, :]
+    #train_labels = validation_matrix[0, :, :]    
     #train_model(train_matrix, train_labels)
     train_model(all_matrix, validation_matrix)
-    #train_model(all_matrix, train_labels)
