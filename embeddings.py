@@ -43,6 +43,7 @@ def create_validation_matrix(all_matrix):
     validation_matrix[:,num_timesteps-1,-1] = np.ones(num_asts)
     return validation_matrix
 
+
 def split_data(all_matrix):
     """ Split data set into 3 groups, training/dev/test set.
     
@@ -68,6 +69,67 @@ def split_data(all_matrix):
     dev_matrix = all_matrix[:test_set_size]
     test_matrix = all_matrix[test_set_size:2*test_set_size]
     return train_matrix, dev_matrix, test_matrix
+
+
+def random_prediction(input_matrix):
+    """ Returns accuracy for blind random prediction of the next block.
+    
+    Parameters:
+    input_matrix (np.array): (num_asts, num_timesteps, num_blocks) data set
+
+    Returns:
+    (float) prediction accuracy
+    """
+    
+    num_asts, num_timesteps, num_blocks = np.shape(input_matrix)
+
+    decoded_input = np.zeros((num_asts, num_timesteps))
+    predictions = np.zeros(np.shape(decoded_input))
+
+    # One-hot encoding into integers
+    for ast_id in range(num_asts):
+        indices = np.array(
+                [np.where(r == 1)[0][0] for r in input_matrix[ast_id, :, :]])
+        end_block_mask = (indices == (num_blocks - 1))
+        
+        end_block_fill = (num_blocks - 1) * np.ones((1, num_timesteps))
+        random_fill = np.random.randint(num_blocks, size=(1, num_timesteps))
+        
+        predictions[ast_id, :] = end_block_mask * end_block_fill + \
+                (end_block_mask == False) * random_fill
+        print(indices, end_block_mask)
+        print(indices, predictions[ast_id, :])
+
+    # Decode validation matrix
+    validation_matrix = create_validation_matrix(input_matrix) 
+    decoded_output = np.zeros((num_asts, num_timesteps))
+    for ast_id in range(num_asts):
+        indices = [np.where(r == 1)[0][0] for r in input_matrix[ast_id, :, :]]
+        decoded_output[ast_id, :] = indices
+    
+    # Calculate accuracy
+    denominator = num_asts * num_timesteps
+    numerator = np.sum(1 * (decoded_output == predictions))
+    
+    return predictions, numerator / denominator
+
+
+def test_random_prediction():
+    np.random.seed(3)
+    num_asts = 2
+    num_timesteps = 3
+    num_blocks = 4
+    
+    input_matrix = np.zeros((num_asts, num_timesteps, num_blocks))
+    input_matrix[0,:,:] = [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+    input_matrix[1,:,:] = [[0, 0, 1, 0], [0, 0, 0, 1], [0, 0, 0, 1]]
+    
+    predictions, accuracy = random_prediction(input_matrix)
+    assert(np.all(predictions > -1))
+    assert(np.all(predictions < num_blocks))
+    assert(predictions[0, 2] == num_blocks - 1)
+    assert(np.all(predictions[1, 1:2] == num_blocks - 1))
+    print(accuracy)
 
 
 def create_model(num_timestep, num_blocks):
@@ -108,7 +170,7 @@ def train_model(train_matrix, train_labels):
     model.fit(train_matrix, train_labels, epochs=5)
 
 
-if __name__=="__main__":
+def test_nn_framework():
     # Input: (M x T x B) matrix representing blocks in all ASTs
     all_matrix = load_data("./data-created/q4_array_of_ast_matrices.npy")
     validation_matrix = create_validation_matrix(all_matrix)
@@ -131,3 +193,7 @@ if __name__=="__main__":
     #train_labels = validation_matrix[0, :, :]    
     #train_model(train_matrix, train_labels)
     train_model(all_matrix, validation_matrix)
+
+
+if __name__=="__main__":
+    test_random_prediction()
