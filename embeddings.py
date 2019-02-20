@@ -4,6 +4,7 @@ import random
 import tensorflow as tf
 import keras.models as models
 import keras.layers as layers
+import matplotlib.pyplot as plt
 
 import utils
 
@@ -41,10 +42,34 @@ def create_model(num_timestep, num_blocks):
     return model
 
 
-def train_model(train_matrix, train_labels):
+def train_model(model, train_matrix, train_labels):
     """ Train the model with the input matrix. """
     
-    model.fit(train_matrix, train_labels, epochs=5)
+    #model.fit(train_matrix, train_labels, epochs=5)
+    
+    history = model.fit(train_matrix, train_labels, 
+                        validation_split=0.1, 
+                        epochs=50, 
+                        batch_size=16, 
+                        verbose=1)
+
+    # Plot training & validation accuracy values
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
+    plt.title('Model accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
+    
+    # Plot training & validation loss values
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Model loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
 
 
 def test_nn_framework():
@@ -69,7 +94,7 @@ def test_nn_framework():
     #train_matrix = all_matrix[0, :, :]
     #train_labels = validation_matrix[0, :, :]    
     #train_model(train_matrix, train_labels)
-    train_model(all_matrix, validation_matrix)
+    train_model(model, all_matrix, validation_matrix)
 
 
 if __name__=="__main__":

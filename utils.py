@@ -1,6 +1,10 @@
 #!/usr/bin/python3
 
 import numpy as np
+<<<<<<< HEAD
+=======
+import random
+>>>>>>> neeraj-branch
 
 def load_data(npy_file):
     """ Load data from file.
