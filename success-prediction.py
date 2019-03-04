@@ -12,6 +12,11 @@ embeddings_dim = 8
 
 code_vocab_size = num_blocks ** code_length
 
+# TODO:
+# 1. Is there a way to train the dense networks with separate weights?
+# 2. Create embedding_matrix from result of embeddings.py
+# 3. Integrate with input/output code
+
 
 def code_hash(block_array):
     return np.dot(block_array, num_blocks ** np.arange(code_length))
