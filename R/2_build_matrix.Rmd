@@ -21,7 +21,8 @@ library(tidyverse)
 tribble(
   ~move_forward, ~turn_left, ~turn_right, ~blank,
        1,             0,           0,        0,
-       0,             0,           0,        1
+       0,             1,           0,        0,
+       0,             0,           1,        0
 )
 ```
 
