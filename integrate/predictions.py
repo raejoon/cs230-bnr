@@ -14,7 +14,7 @@ def get_output_labels(X):
 def create_baseline_model(X):
     pass
 
-def create_nn_model(X):
+def create_nn_model(X, embeddings_dict):
     pass
 
 def fit_model(model, X, Y):
