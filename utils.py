@@ -82,26 +82,24 @@ def onehot_decode(onehot_matrix):
     return np.matmul(onehot_matrix, range_vector)
 
 
-def accuracy_from_onehot(prediction_matrix, validation_matrix):
+def accuracy_from_class_matrix(prediction_matrix, validation_matrix, eoa_ind):
+    """ Calculate accuracy from two class matrices.
+        TODO: still inaccurate since figuring out the first occurence of eoa
+        block is not trivial but the current code discards the outcome.
+    """
+    num_asts, num_timesteps = np.shape(prediction_matrix)
+    pred_vec = prediction_matrix.flatten()
+    vali_vec = validation_matrix.flatten()
+    pred_vec_filtered = pred_vec[vali_vec != eoa_ind]
+    vali_vec_filtered = vali_vec[vali_vec != eoa_ind]
+    correct = np.sum(1 * (pred_vec_filtered != vali_vec_filtered))
+    return correct / len(vali_vec_filtered)
+
+
+def accuracy_from_onehot_matrix(prediction_matrix, validation_matrix):
     """ Calculate accuracy from two onehot encoded matrices. """
-    num_asts, num_timesteps, num_blocks = np.shape(prediction_matrix)
-    
-    correct = 0
-    total_valid = 0
-    correct_valid = 0
-    for ast_id in range(num_asts):
-        decoded_predictions = onehot_decode(prediction_matrix[ast_id,:,:])
-        decoded_validations = onehot_decode(validation_matrix[ast_id,:,:])
-
-        end_ind = np.argmax(decoded_validations == num_blocks - 1) + 1
-        total_valid += (end_ind + 1)
-        correct_valid += \
-            np.sum(1 * (decoded_predictions[:end_ind + 1] ==
-                        decoded_validations[:end_ind + 1]))
-
-        correct += np.sum(1 * (decoded_predictions == decoded_validations))
-    
-    accuracy = correct / (num_asts * num_timesteps)
-    accuracy_valid = correct_valid / total_valid
-    return accuracy, accuracy_valid
-
+    _, _, num_blocks = np.shape(prediction_matrix)
+    pred_class_matrix = np.argmax(prediction_matrix, axis=-1)
+    vali_class_matrix = np.argmax(validation_matrix, axis=-1)
+    return accuracy_from_class_matrix(pred_class_matrix, vali_class_matrix,
+                                      eoa_ind=num_blocks-1)
