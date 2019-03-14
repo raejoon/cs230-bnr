@@ -95,7 +95,10 @@ def test_nn_framework():
     #train_labels = validation_matrix[0, :, :]    
     #train_model(train_matrix, train_labels)
     train_model(model, all_matrix, validation_matrix)
-
+    
+    print(utils.accuracy_from_onehot_matrix(
+              model.predict(test_matrix),
+              utils.create_validation_matrix(test_matrix)))
 
 if __name__=="__main__":
     test_nn_framework()
