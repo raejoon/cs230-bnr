@@ -24,7 +24,7 @@ def main():
     pred_output = predictions.get_output_labels(pred_output)
     
     embed_dict = embeddings.load_embeddings(embed_dict_filename)
-    pred_model = predictions.create_nn_model(pred_input)
+    pred_model = predictions.create_nn_model(pred_input, embed_dict)
     pred_history = predictions.fit_model(pred_model, pred_input, pred_output) 
     
     pred_model_filename = "tmp/my_predictions.h5"
