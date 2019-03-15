@@ -1,9 +1,57 @@
 import numpy as np
+import keras
+import tensorflow as tf
+from keras.utils import to_categorical
 import keras.models as models
 import keras.layers as layers
 
+np.random.seed(1)
+tf.set_random_seed(1)
+
+class History(keras.callbacks.Callback):
+    def __init__(self, X_train, Y_train):
+        super().__init__()
+        self.X_train = X_train
+        self.Y_train = Y_train
+        self.effective_accuracy = {"train": [], "validate": []}
+
+    def _get_accuracy(self, X, Y_true, Y_pred):
+        Y_true_class = np.argmax(Y_true, axis=-1)
+        Y_pred_class = np.argmax(Y_pred, axis=-1)
+        accuracy = np.sum(Y_true_class == Y_pred_class) / Y_true_class.size
+        return accuracy
+    
+    def _get_effective_accuracy(self, X, Y_true, Y_pred):
+        num_blocks = np.shape(X)[2]
+        
+        X_class = np.argmax(X, axis=-1).flatten()
+        Y_true_class = np.argmax(Y_true, axis=-1).flatten()
+        Y_pred_class = np.argmax(Y_pred, axis=-1).flatten()
+        
+        Y_true_eff = Y_true_class[X_class != num_blocks - 1]
+        Y_pred_eff = Y_pred_class[X_class != num_blocks - 1] 
+        accuracy = np.sum(Y_true_eff == Y_pred_eff) / Y_true_eff.size
+        return accuracy
+    
+    def on_epoch_end(self, epoch, logs={}):
+        X = self.X_train
+        Y_true = self.Y_train
+        Y_pred = self.model.predict(X)
+
+        self.effective_accuracy["train"].append(
+            self._get_effective_accuracy(X, Y_true, Y_pred))
+
+        X = self.validation_data[0]
+        Y_true = self.validation_data[1]
+        Y_pred = self.model.predict(X)
+
+        self.effective_accuracy["validate"].append(
+            self._get_effective_accuracy(X, Y_true, Y_pred))
+
+
 def load_asts_from_dataset(ast_dirpath):
     pass
+
 
 def load_asts_from_file(ast_filepath):
     """ Load asts from file.
@@ -69,13 +117,22 @@ def create_model(X):
     model.summary()
     return model
 
-def fit_model(model, X, Y):
-    history = model.fit(X, Y, 
-                        validation_split=0.1, 
-                        epochs=50, 
+
+def fit_model(model, X, Y, epochs=50):
+    split_ind = int((1 - 0.1) * np.shape(X)[0])
+    X_train = X[np.arange(split_ind), :, :]
+    Y_train = Y[np.arange(split_ind), :, :]
+    X_validate = X[np.arange(split_ind, np.shape(X)[0]), :, :]
+    Y_validate = Y[np.arange(split_ind, np.shape(Y)[0]), :, :]
+
+    custom_history = History(X_train, Y_train)
+
+    history = model.fit(X_train, Y_train, 
+                        validation_data=(X_validate, Y_validate), 
+                        epochs=epochs, 
                         batch_size=16, 
-                        verbose=1)
-    return history
+                        verbose=1, callbacks=[custom_history])
+    return custom_history
 
 def get_embeddings(model, X):
     pass
