@@ -70,7 +70,12 @@ def create_model(X):
     return model
 
 def fit_model(model, X, Y):
-    pass
+    history = model.fit(X, Y, 
+                        validation_split=0.1, 
+                        epochs=50, 
+                        batch_size=16, 
+                        verbose=1)
+    return history
 
 def get_embeddings(model, X):
     pass
