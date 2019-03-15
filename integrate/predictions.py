@@ -34,10 +34,10 @@ def load_trajectories_from_dataset(trajectory_dirpath):
 
 
 def load_trajectories_from_file(trajectory_filepath):
-    pass
+    return np.load(trajectory_filepath)
 
 def save_trajectories_to_file(X, trajectory_filepath):
-    pass
+    np.save(trajectory_filepath, X)
 
 def get_output_labels(X):
     pass
