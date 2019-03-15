@@ -1,7 +1,7 @@
 import unittest
 import os, shutil
 import numpy as np
-from keras.models import Model
+from keras.models import Model, Sequential
 import predictions, embeddings
 
 class TestEmbeddings(unittest.TestCase):
@@ -23,6 +23,13 @@ class TestEmbeddings(unittest.TestCase):
         ref[0,:,:] = np.array([[1, 0, 0], [1, 0, 0], [0, 0, 1], [0, 0, 1]])
         ref[1,:,:] = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]) 
         np.testing.assert_equal(Y, ref)
+
+    def test_create_model(self):
+        X = np.zeros((2, 4, 3))
+        X[0,:,:] = np.array([[0, 1, 0], [1, 0, 0], [1, 0, 0], [0, 0, 1]])
+        X[1,:,:] = np.array([[1, 0, 0], [0, 0, 1], [0, 0, 1], [0, 0, 1]])
+        self.assertEqual(type(embeddings.create_model(X)), type(Sequential()))
+        
 
 class TestPredictions(unittest.TestCase):
     def test_load_trajectories_from_dataset(self):
@@ -66,6 +73,7 @@ class TestPredictions(unittest.TestCase):
     def test_create_nn_model_without_embeddings(self):
         X = np.array([[0, 1, 2, 3], [3, 2, 1, 0]])
         model = predictions.create_nn_model(X, 4, 2) 
+        self.assertEqual(type(model), type(Sequential()))
 
     def test_create_nn_model_with_embeddings(self):
         # Create model
@@ -73,6 +81,7 @@ class TestPredictions(unittest.TestCase):
         embeddings_matrix = \
             np.array([[0., 0.], [0.1, 0.2], [0.2, 0.3], [0.3, 0.2], [0.2, 0.1]])
         model = predictions.create_nn_model(X, 4, 2, embeddings_matrix) 
+        self.assertEqual(type(model), type(Sequential()))
         
         # Get embedding layer output and make sure it is correct.
         embedding_layer = Model(inputs=model.input,
@@ -88,6 +97,7 @@ class TestPredictions(unittest.TestCase):
     def test_create_baseline_model_without_embeddings(self):
         X = np.array([[0, 1, 2, 3], [3, 2, 1, 0]])
         model = predictions.create_baseline_model(X, 4, 2) 
+        self.assertEqual(type(model), type(Sequential()))
 
     def test_create_baseline_model_with_embeddings(self):
         # Create model
@@ -95,6 +105,7 @@ class TestPredictions(unittest.TestCase):
         embeddings_matrix = \
             np.array([[0., 0.], [0.1, 0.2], [0.2, 0.3], [0.3, 0.2], [0.2, 0.1]])
         model = predictions.create_baseline_model(X, 4, 2, embeddings_matrix) 
+        self.assertEqual(type(model), type(Sequential()))
         
         # Get embedding layer output and make sure it is correct.
         embedding_layer = Model(inputs=model.input,

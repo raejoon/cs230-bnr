@@ -1,4 +1,6 @@
 import numpy as np
+import keras.models as models
+import keras.layers as layers
 
 def load_asts_from_dataset(ast_dirpath):
     pass
@@ -21,6 +23,7 @@ def save_asts_to_file(X, ast_filepath):
     X = np.swapaxes(X, 0, 1)  
     np.save(ast_filepath, X)
 
+
 def get_output_labels(X):
     num_asts = X.shape[0]
     num_timesteps = X.shape[1]
@@ -32,8 +35,39 @@ def get_output_labels(X):
     Y[:,num_timesteps-1,-1] = np.ones(num_asts)
     return Y 
 
+
 def create_model(X):
-    pass
+    """ Returns LSTM model for predicting next block in a given AST and a
+    timestep
+    """
+    _, num_timestep, num_blocks = np.shape(X)
+    hidden_size = 128
+    dropout_p = 0.5
+    
+    model = models.Sequential()
+    
+    #Add LSTM layer with 128 hidden units, tanh nonlinearity
+    model.add(layers.LSTM(hidden_size, 
+                          activation='tanh',
+                          return_sequences=True,
+                          input_shape=(num_timestep, num_blocks)))
+    
+    #Add Dropout
+    #What about rescalling?, we shouuld add scale up 
+    #to avoid modifying it during test time
+    model.add(layers.Dropout(dropout_p))
+    
+    #Add Dense layer
+    model.add(layers.Dense(num_blocks,
+                           activation='softmax'))
+    
+    #Configure the learning process
+    model.compile(loss="categorical_crossentropy",
+                  optimizer="adam",
+                  metrics=["accuracy"])
+    
+    model.summary()
+    return model
 
 def fit_model(model, X, Y):
     pass
