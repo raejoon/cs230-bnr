@@ -2,7 +2,16 @@ import unittest
 import os, shutil
 import numpy as np
 from keras.models import Model
-import predictions
+import predictions, embeddings
+
+class TestEmbeddings(unittest.TestCase):
+    def test_load_asts_from_file(self):
+        X1 = np.zeros((2, 2, 4))
+        X1[0,:,:] = np.array([[1, 2, 3, 4], [2, 3, 4, 5]])
+        X1[1,:,:] = np.array([[10, 20, 30, 40], [20, 30, 40 ,50]])
+        embeddings.save_asts_to_file(X1, "tmp.npy")
+        X2 = embeddings.load_asts_from_file("tmp.npy")
+        np.testing.assert_equal(X1, X2)
 
 class TestPredictions(unittest.TestCase):
     def test_load_trajectories_from_dataset(self):
