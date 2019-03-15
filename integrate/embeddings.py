@@ -22,7 +22,15 @@ def save_asts_to_file(X, ast_filepath):
     np.save(ast_filepath, X)
 
 def get_output_labels(X):
-    pass
+    num_asts = X.shape[0]
+    num_timesteps = X.shape[1]
+
+    Y = np.zeros(X.shape)
+    for t in range(num_timesteps - 1):
+        Y[:,t,:] = X[:,t+1,:]
+
+    Y[:,num_timesteps-1,-1] = np.ones(num_asts)
+    return Y 
 
 def create_model(X):
     pass

@@ -13,6 +13,17 @@ class TestEmbeddings(unittest.TestCase):
         X2 = embeddings.load_asts_from_file("tmp.npy")
         np.testing.assert_equal(X1, X2)
 
+    def test_get_output_labels(self):
+        X = np.zeros((2, 4, 3))
+        X[0,:,:] = np.array([[0, 1, 0], [1, 0, 0], [1, 0, 0], [0, 0, 1]])
+        X[1,:,:] = np.array([[1, 0, 0], [0, 0, 1], [0, 0, 1], [0, 0, 1]])
+        Y = embeddings.get_output_labels(X)
+
+        ref = np.zeros((2, 4, 3))
+        ref[0,:,:] = np.array([[1, 0, 0], [1, 0, 0], [0, 0, 1], [0, 0, 1]])
+        ref[1,:,:] = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]) 
+        np.testing.assert_equal(Y, ref)
+
 class TestPredictions(unittest.TestCase):
     def test_load_trajectories_from_dataset(self):
         os.makedirs("tmp_traj")
