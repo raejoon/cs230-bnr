@@ -29,8 +29,12 @@ def main():
     embeddings_run()
      
     # Failure prediction (Main task)
-    pred_input = predictions.load_trajectories_from_dataset("hoc4/trajectories")
-    pred_output = predictions.get_output_labels(pred_output)
+    traj_dirpath = "anonymizeddata/hoc4/trajectories"
+    pred_input = predictions.load_trajectories_from_dataset(traj_dirpath)
+    save_trajectories_to_file(pred_input, "processed/hoc4_traj.npy"):
+
+    #pred_output = predictions.get_output_labels(pred_output)
+    pred_output = load_output_labels_npy("processed/correct_within_1.npy"):
     
     embed_dict = embeddings.load_embeddings(embed_dict_filename)
     pred_model = predictions.create_nn_model(pred_input, embed_dict)
