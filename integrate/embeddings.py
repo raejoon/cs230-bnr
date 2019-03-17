@@ -4,6 +4,7 @@ import tensorflow as tf
 from keras.utils import to_categorical
 import keras.models as models
 import keras.layers as layers
+import utils
 
 np.random.seed(1)
 tf.set_random_seed(1)
@@ -89,7 +90,7 @@ def create_model(X):
     timestep
     """
     _, num_timestep, num_blocks = np.shape(X)
-    hidden_size = 128
+    hidden_size = 1
     dropout_p = 0.5
     
     model = models.Sequential()
@@ -134,12 +135,31 @@ def fit_model(model, X, Y, epochs=50):
                         verbose=1, callbacks=[custom_history])
     return custom_history
 
-def get_embeddings(model, X):
+
+def _get_input_with_dummy_asts(sorted_X, ast_dirpath):
+    existing_ids = utils.get_ast_ids(ast_dirpath)
+    # + 2 for (1) ast_id starting from 1, (2) add dummy row for Keras
+    filled_X = np.zeros((max(existing_ids) + 2, 
+                         np.shape(sorted_X)[1], np.shape(sorted_X)[2]))
+
+    # let 0 row to be dummy, thanks to Keras
+    for ind, ast_id in enumerate(existing_ids):
+        filled_X[ast_id + 1, :, :] = sorted_X[ind, :, :]
+
+    return filled_X
+
+
+def get_embeddings(model, X, ast_count_filepath):
+    filled_X = _get_input_with_dummy_asts(X, ast_count_filepath)
+
     from keras import backend as K
     get_lstm_layer_output = K.function([model.layers[0].input],
                                        [model.layers[0].output])
     
-    lstm_output = get_lstm_layer_output([X])[0]
+    lstm_output = get_lstm_layer_output([filled_X])[0]
+    lstm_shape = np.shape(lstm_output)
+    lstm_output = np.reshape(lstm_output, (lstm_shape[0], lstm_shape[1]))
+    assert(len(np.shape(lstm_output)) == 2)
     return lstm_output
 
 def save_embeddings(embed_dict, filepath):
