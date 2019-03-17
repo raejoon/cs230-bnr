@@ -135,11 +135,19 @@ def fit_model(model, X, Y, epochs=50):
     return custom_history
 
 def get_embeddings(model, X):
-    pass
+    from keras import backend as K
+    get_lstm_layer_output = K.function([model.layers[0].input],
+                                       [model.layers[0].output])
+    
+    lstm_output = get_lstm_layer_output([X])[0]
+    return lstm_output
 
 def save_embeddings(embed_dict, filepath):
-    pass
+    np.save(filepath, embed_dict)
+    print("Saved embeddings at " + filepath)
 
 def load_embeddings(filepath):
-    pass
+    embed_dict = np.load(filepath)
+    print("Loaded embeddings from " + filepath)
+    return embed_dict
 

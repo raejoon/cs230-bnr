@@ -7,8 +7,9 @@ def save_model(model, filepath):
     model_json = model.to_json()
     archpath = filepath + ".json"
     with open(archpath, "w") as json_file:
-        json_file.write(model_json)        
-    print("Saved model to " + archpath )    
+        json_file.write(model_json)  
+        
+    print("Saved model to " + filepath )    
     
 
 def load_saved_model(filepath):

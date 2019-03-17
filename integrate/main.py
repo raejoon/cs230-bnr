@@ -17,12 +17,11 @@ def embeddings_run():
 
     embed_model_filename = "tmp/my_embeddings.h5"
     utils.save_model(embed_model, embed_model_filename)
-    embed_model = utils.load_model(embed_model_filename)
+    embed_model = utils.load_saved_model(embed_model_filename)
     
     embed_dict = embeddings.get_embeddings(embed_model, embed_input)
-    embed_dict_filename = "tmp/my_embeddings.dat"
-    embeddings.save_embeddings(embed_dict, embed_dict_filename) 
-    
+    embed_dict_filename = "tmp/my_embeddings.npy"
+    embeddings.save_embeddings(embed_dict, embed_dict_filename)    
 
 
 def main():
