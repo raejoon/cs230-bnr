@@ -18,7 +18,7 @@ def embeddings_run():
     print(embed_history.effective_accuracy["validate"])
 
     embed_model_filename = "tmp/my_embeddings.h5"
-    #utils.save_model(embed_model, embed_model_filename)
+    utils.save_model(embed_model, embed_model_filename)
     embed_model = utils.load_saved_model(embed_model_filename)
     
     ast_dirpath = "anonymizeddata/data/hoc4/asts/"
@@ -44,7 +44,8 @@ def main():
     embed_mat = embeddings.load_embeddings(embed_dict_filename)
     embed_dims = np.shape(embed_mat)[1]
     pred_model = predictions.create_nn_model(pred_input, embed_dims, embed_mat)
-    pred_history = predictions.fit_model(pred_model, pred_input, pred_output) 
+    pred_history = predictions.fit_model(pred_model, pred_input, pred_output,
+                                         epochs=10) 
     
     pred_model_filename = "tmp/my_predictions.h5"
     utils.save_model(pred_model, pred_model_filename)

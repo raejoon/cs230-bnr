@@ -3,6 +3,7 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Embedding, TimeDistributed, Activation
 import utils
+import keras_metrics as km
 
 
 def _get_input_matrix(secret_to_traj_map, traj_to_ast_map, maxlen):
@@ -69,9 +70,11 @@ def get_output_labels(X):
     pass
 
 def load_output_labels_npy(output_filepath):
-    Y = np.load(output_filepath)[:,1:]
+    Y = np.absolute(np.load(output_filepath)[:,1:] - 1)
     return np.reshape(Y, (np.shape(Y)[0], np.shape(Y)[1], 1))
 
+### Do not use these !!!! ###
+"""
 def save_output_labels_npy(Y, output_filepath):
     np.save(output_filepath, 
             np.reshape(Y, (np.shape(Y)[0], np.shape(Y)[1], 1)))
@@ -87,7 +90,7 @@ def load_output_labels_csv(output_csvpath):
 
     Y = np.array(data)
     return np.reshape(Y, (np.shape(Y)[0], np.shape(Y)[1], 1))
-
+"""
 
 def create_baseline_model(X, embeddings_dim, embeddings_matrix=None):
     ast_dirpath = "anonymizeddata/data/hoc4/asts"
@@ -108,7 +111,7 @@ def create_baseline_model(X, embeddings_dim, embeddings_matrix=None):
     model.add(TimeDistributed(Dense(1)))
     model.add(Activation("sigmoid"))
     model.compile(loss="binary_crossentropy", optimizer="adam",
-                  metrics=["accuracy"])
+                  metrics=["accuracy", km.binary_recal()])
     model.summary()
     return model
 
@@ -140,7 +143,7 @@ def create_nn_model(X, embeddings_dim, embeddings_matrix=None):
     model.add(Activation("sigmoid"))
 
     model.compile(loss="binary_crossentropy", optimizer="adam",
-                  metrics=["accuracy"])
+                  metrics=["accuracy", km.binary_recal()])
     model.summary()
     return model
 
