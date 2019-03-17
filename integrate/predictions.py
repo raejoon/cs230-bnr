@@ -42,6 +42,12 @@ def save_trajectories_to_file(X, trajectory_filepath):
 def get_output_labels(X):
     pass
 
+def load_output_labels_npy(output_filepath):
+    return np.load(output_filepath)
+
+def save_output_labels_npy(Y, output_filepath):
+    np.save(output_filepath, Y)
+
 def save_output_labels_csv(Y, output_csvpath):
     with open(output_csvpath, "w") as fo: 
         for r in range(np.shape(Y)[0]):

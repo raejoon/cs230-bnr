@@ -62,6 +62,15 @@ class TestPredictions(unittest.TestCase):
         os.remove("tmp.npy")
         np.testing.assert_equal(X1, X2)
 
+    def test_load_output_labels_npy(self):
+        X1 = np.array([[10, 20, 20, 20],
+                      [200, 400, 600, 800],
+                      [200, 400, 600, 800]])
+        predictions.save_output_labels_npy(X1, "tmp.npy")
+        X2 = predictions.load_output_labels_npy("tmp.npy")
+        os.remove("tmp.npy")
+        np.testing.assert_equal(X1, X2)
+
     def test_output_labels_csv(self):
         filename = "tmp.csv"
         Y1 = np.array([[0, 1, 1, 0], [1, 0, 1, 0]])
