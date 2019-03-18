@@ -10,15 +10,15 @@ def embeddings_run():
     embed_input = embeddings.load_asts_from_file(ast_filepath) 
     embed_output = embeddings.get_output_labels(embed_input)
     
-    embed_model = embeddings.create_model(embed_input)
-    embed_history = embeddings.fit_model(embed_model, 
-                                         embed_input, embed_output,
-                                         epochs=50)
-    print(embed_history.effective_accuracy["train"])
-    print(embed_history.effective_accuracy["validate"])
+    #embed_model = embeddings.create_model(embed_input)
+    #embed_history = embeddings.fit_model(embed_model, 
+    #                                     embed_input, embed_output,
+    #                                     epochs=50)
+    #print(embed_history.effective_accuracy["train"])
+    #print(embed_history.effective_accuracy["validate"])
 
     embed_model_filename = "tmp/my_embeddings.h5"
-    utils.save_model(embed_model, embed_model_filename)
+    #utils.save_model(embed_model, embed_model_filename)
     embed_model = utils.load_saved_model(embed_model_filename)
     
     ast_dirpath = "anonymizeddata/data/hoc4/asts/"

@@ -111,7 +111,7 @@ def create_baseline_model(X, embeddings_dim, embeddings_matrix=None):
     model.add(TimeDistributed(Dense(1)))
     model.add(Activation("sigmoid"))
     model.compile(loss="binary_crossentropy", optimizer="adam",
-                  metrics=["accuracy", km.binary_recal()])
+                  metrics=["accuracy", km.binary_recall()])
     model.summary()
     return model
 
@@ -143,7 +143,7 @@ def create_nn_model(X, embeddings_dim, embeddings_matrix=None):
     model.add(Activation("sigmoid"))
 
     model.compile(loss="binary_crossentropy", optimizer="adam",
-                  metrics=["accuracy", km.binary_recal()])
+                  metrics=["accuracy", km.binary_recall()])
     model.summary()
     return model
 
