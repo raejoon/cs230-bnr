@@ -1,9 +1,67 @@
 import os
 import numpy as np
+import keras
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Embedding, TimeDistributed, Activation
 import utils
 import keras_metrics as km
+import matplotlib.pyplot as plt
+import tensorflow as tf
+
+tf.reset_default_graph()
+keras.backend.clear_session()
+
+class History(keras.callbacks.Callback):
+    def __init__(self, X_train, Y_train):
+        super().__init__()
+        self.X_train = X_train
+        self.Y_train = Y_train
+        self.recall_train = {}
+        self.recall_validate = {}
+        self.epoch = 1
+
+    def _get_recall(self, Y_true, Y_pred, p):
+        P = 0.5 ** p
+        num_students, num_asts, _ = np.shape(Y_true)
+
+        Y_true_flat = Y_true.flatten()
+        Y_pred_flat = 1 * (Y_pred.flatten() > P)
+        
+        positive_mask = (Y_true_flat == 1.)
+        return np.mean(Y_pred_flat[positive_mask])
+    
+    def on_epoch_end(self, epoch, logs={}):
+        X = self.X_train
+        Y_true = self.Y_train
+        Y_pred = self.model.predict(X)
+
+        for p in np.arange(1, 4):
+            self.recall_train[(p, self.epoch)] = \
+                    self._get_recall(Y_true, Y_pred, p)
+
+        X = self.validation_data[0]
+        Y_true = self.validation_data[1]
+        Y_pred = self.model.predict(X)
+
+        for p in np.arange(1, 4):
+            self.recall_validate[(p, self.epoch)] = \
+                    self._get_recall(Y_true, Y_pred, p)
+
+        print(self.recall_train)
+        print(self.recall_validate)
+        self.epoch += 1
+
+
+def plot_recall_curves(history):
+    for p in np.arange(1, 4):
+        P = 0.5 ** P
+        y_train = [history.recall_train[(P, e)] for e in range(history.epoch)]
+    
+        plt.plot(y_train, label="p_threshold: " + str(p))
+    
+    plt.legend()
+    plt.xlabel("Epoch")
+    plt.ylabel("Test set recall")
 
 
 def _get_input_matrix(secret_to_traj_map, traj_to_ast_map, maxlen):
@@ -143,10 +201,25 @@ def create_nn_model(X, embeddings_dim, embeddings_matrix=None):
     model.add(Activation("sigmoid"))
 
     model.compile(loss="binary_crossentropy", optimizer="adam",
-                  metrics=["accuracy", km.binary_recall()])
+                  metrics=["accuracy"])
     model.summary()
     return model
 
 
 def fit_model(model, X, Y, epochs=5):
-    model.fit(X, Y, batch_size=64, epochs=epochs, validation_split=0.1)
+    split_ind = int((1 - 0.1) * np.shape(X)[0])
+    X_train = X[np.arange(split_ind), :]
+    Y_train = Y[np.arange(split_ind), :, :]
+    X_validate = X[np.arange(split_ind, np.shape(X)[0]), :]
+    Y_validate = Y[np.arange(split_ind, np.shape(Y)[0]), :, :]
+
+    custom_history = History(X_train, Y_train)
+
+    history = model.fit(X_train, Y_train, 
+                        validation_data=(X_validate, Y_validate), 
+                        epochs=epochs, 
+                        batch_size=16, 
+                        verbose=1, callbacks=[custom_history])
+    keras.backend.clear_session()
+
+    return custom_history
