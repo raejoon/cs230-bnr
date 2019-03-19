@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 import os
 import subprocess as sp
 
+def get_ast_ids(ast_dirpath):
+    find = ["find", ast_dirpath, "-regex", ".*/[0-9]+.json"]
+    proc = sp.run(find, stdout=sp.PIPE) 
+    filelist = proc.stdout.decode("utf-8").split("\n")
+    filelist = [fn for fn in filelist if len(fn) > 0]
+    ids = [int(os.path.splitext(os.path.basename(fn))[0]) for fn in filelist]
+    return ids
+
 def get_trajectory_ids(trajectory_dirpath):
     find = ["find", trajectory_dirpath, "-regex", ".*/[0-9]+.txt"]
     proc = sp.run(find, stdout=sp.PIPE) 
@@ -11,7 +19,8 @@ def get_trajectory_ids(trajectory_dirpath):
     ids = [int(os.path.splitext(os.path.basename(fn))[0]) for fn in filelist]
     return ids
 
-def get_trajectory_to_asts(trajectory_dirpath):
+def get_trajectory_to_asts(trajectory_dirpath, ast_ids):
+    ast_set = set(ast_ids)
     traj_to_asts_map = {}
     tid_list = get_trajectory_ids(trajectory_dirpath)
     maxlen = 0
@@ -19,10 +28,16 @@ def get_trajectory_to_asts(trajectory_dirpath):
         trajectory_filepath = os.path.join(trajectory_dirpath, str(tid)+".txt")
         with open(trajectory_filepath) as fo:
             ast_list = [int(line.rstrip()) for line in fo]
+            notgood = False
+            for ast in ast_list:
+                if ast not in ast_set:
+                    notgood = True
+                    continue
+            if notgood:
+                continue
             maxlen = max(len(ast_list), maxlen)
             traj_to_asts_map[tid] = ast_list
     return traj_to_asts_map, maxlen
-
 
 def current_failures_to_future(failure_list, window=1):
     end = len(failure_list)
@@ -80,16 +95,18 @@ def plot_data_balance(Y):
 
 def report_data_balance(Y, imagepath):
     print("Fraction of failure labels", np.mean(Y))
-    plot_data_balance(Y)
-    plt.savefig(imagepath)
+    #plot_data_balance(Y)
+    #plt.savefig(imagepath)
 
 if __name__=="__main__":
     rootpath = "../anonymizeddata/data/hoc4/"
+    ast_dirpath = os.path.join(rootpath, "asts")
     trajectory_dirpath = os.path.join(rootpath, "trajectories")
     result_filepath = os.path.join(rootpath, "asts/unitTestResults.txt")
     
+    ast_ids = get_ast_ids(ast_dirpath)
     correct_set = get_correct_asts(result_filepath)
-    traj_to_asts, maxlen = get_trajectory_to_asts(trajectory_dirpath)
+    traj_to_asts, maxlen = get_trajectory_to_asts(trajectory_dirpath, ast_ids)
     traj_to_fails = get_trajectory_to_failures(traj_to_asts, correct_set) 
     traj_to_futures = get_trajectory_to_future_failures(traj_to_fails, 2)
 

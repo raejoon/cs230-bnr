@@ -138,8 +138,9 @@ def fit_model(model, X, Y, epochs=50):
 
 def _get_input_with_dummy_asts(sorted_X, ast_dirpath):
     existing_ids = utils.get_ast_ids(ast_dirpath)
-    # + 2 for (1) ast_id starting from 1, (2) add dummy row for Keras
-    filled_X = np.zeros((max(existing_ids) + 2, 
+    ast_range_size = max(existing_ids) + 1
+    # add dummy row for Keras
+    filled_X = np.zeros((ast_range_size + 1, 
                          np.shape(sorted_X)[1], np.shape(sorted_X)[2]))
 
     # let 0 row to be dummy, thanks to Keras
