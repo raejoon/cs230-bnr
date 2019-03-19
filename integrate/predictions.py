@@ -8,6 +8,26 @@ import utils
 import keras_metrics as km
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from keras import backend as K
+
+
+def recall(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+    recall = true_positives / (possible_positives + K.epsilon())
+    return recall
+
+def precision(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+    precision = true_positives / (predicted_positives + K.epsilon())
+    return precision
+
+def f1(y_true, y_pred):
+    precisionVal = precision(y_true, y_pred)
+    recallVal = recall(y_true, y_pred)
+    return 2*((precisionVal*recallVal)/(precisionVal+recallVal+K.epsilon()))
+
 
 def load_trajectories_from_file(trajectory_filepath):
     return np.load(trajectory_filepath)
@@ -37,8 +57,10 @@ def create_baseline_model(X, embeddings_dim, embeddings_matrix=None):
     model.add(TimeDistributed(Dense(1)))
     model.add(Activation("sigmoid"))
     model.add(Reshape((max_timestep,)))
+#    model.compile(loss="binary_crossentropy", optimizer="sgd",
+#                  metrics=["accuracy", km.binary_recall()])
     model.compile(loss="binary_crossentropy", optimizer="sgd",
-                  metrics=["accuracy", km.binary_recall()])
+                  metrics=["accuracy", precision, recall, f1])
     model.summary()
     return model
 
@@ -67,7 +89,7 @@ def create_nn_model(X, embeddings_dim, embeddings_matrix=None):
     model.add(Reshape((max_timestep,)))
 
     model.compile(loss="binary_crossentropy", optimizer="adam",
-                  metrics=["accuracy", km.binary_recall()])
+                  metrics=["accuracy", precision, recall, f1])
     model.summary()
     return model
 
