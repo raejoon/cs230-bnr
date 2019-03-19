@@ -32,42 +32,42 @@ def main():
     embeddings_run()
      
     # Failure prediction (Main task)
-    traj_dirpath = "anonymizeddata/data/hoc4/trajectories"
-    pred_input = predictions.load_trajectories_from_dataset(traj_dirpath)
+#    traj_dirpath = "anonymizeddata/data/hoc4/trajectories"
+#    pred_input = predictions.load_trajectories_from_dataset(traj_dirpath)
 
-    input_filepath = "processed/hoc4_traj.npy"
+    input_filepath = "processed/traj_ast_matrix.npy"
     pred_input = predictions.load_trajectories_from_file(input_filepath)
 
-    output_filepath = "processed/correct_within_1_try2.npy"
+    output_filepath = "processed/traj_fail_window_2_matrix.npy"
     pred_output = predictions.load_output_labels_npy(output_filepath)
     
-    pred_input = pred_input[:, np.arange(2)]
-    pred_output = pred_output[:, np.arange(2), :]
+    pred_input = pred_input[:, np.arange(10)]
+    pred_output = pred_output[:, np.arange(10), :]
     print(np.mean(pred_output))
     
     embed_mat = embeddings.load_embeddings(embed_dict_filename)
     embed_dims = np.shape(embed_mat)[1]
 
-    pred_model = predictions.create_nn_model(pred_input, embed_dims)
-    #pred_model = predictions.create_nn_model(pred_input, embed_dims, embed_mat)
+#    pred_model = predictions.create_nn_model(pred_input, embed_dims)
+    pred_model = predictions.create_nn_model(pred_input, embed_dims, embed_mat)
     pred_history = predictions.fit_model(pred_model, pred_input, pred_output,
                                          epochs=5) 
 
-    predictions.plot_recall_curves(pred_history)
-    import matplotlib.pyplot as plt
-    plt.savefig("recall_curve.png")
+#    predictions.plot_recall_curves(pred_history)
+#    import matplotlib.pyplot as plt
+#    plt.savefig("recall_curve.png")
     
-    pred_model_filename = "tmp/my_predictions.h5"
-    utils.save_model(pred_model, pred_model_filename)
+#    pred_model_filename = "tmp/my_predictions.h5"
+#    utils.save_model(pred_model, pred_model_filename)
     
     # Failure prediction with logistic regression 
-    pred_model = predictions.create_baseline_model(pred_input, embed_dims,
-                                                   embed_mat)
-    pred_history = predictions.fit_model(pred_model, pred_input, pred_output,
-                                         epochs=10)
-    
-    pred_model_filename = "tmp/baseline_predictions.h5"
-    utils.save_model(pred_model, pred_model_filename)
+#    pred_model = predictions.create_baseline_model(pred_input, embed_dims,
+#                                                   embed_mat)
+#    pred_history = predictions.fit_model(pred_model, pred_input, pred_output,
+#                                         epochs=10)
+#    
+#    pred_model_filename = "tmp/baseline_predictions.h5"
+#    utils.save_model(pred_model, pred_model_filename)
 
 
 if __name__=="__main__":

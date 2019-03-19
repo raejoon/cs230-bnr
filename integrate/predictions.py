@@ -54,8 +54,8 @@ class History(keras.callbacks.Callback):
 
 def plot_recall_curves(history):
     for p in np.arange(1, 4):
-        P = 0.5 ** P
-        y_train = [history.recall_train[(P, e)] for e in range(history.epoch)]
+        p = 0.5 ** p
+        y_train = [history.recall_train[(p, e)] for e in range(history.epoch)]
     
         plt.plot(y_train, label="p_threshold: " + str(p))
     
@@ -128,8 +128,9 @@ def get_output_labels(X):
     pass
 
 def load_output_labels_npy(output_filepath):
-    Y = np.absolute(np.load(output_filepath)[:,1:] - 1)
+    Y = np.load(output_filepath)
     return np.reshape(Y, (np.shape(Y)[0], np.shape(Y)[1], 1))
+    #Y = np.absolute(np.load(output_filepath)[:,1:] - 1)
 
 ### Do not use these !!!! ###
 """
@@ -177,6 +178,7 @@ def create_baseline_model(X, embeddings_dim, embeddings_matrix=None):
 def create_nn_model(X, embeddings_dim, embeddings_matrix=None):
     ast_dirpath = "anonymizeddata/data/hoc4/asts"
     num_asts = max(utils.get_ast_ids(ast_dirpath)) + 1
+#    num_asts = np.amax(X)
     num_trials = np.shape(X)[1]
 
     model = Sequential()
