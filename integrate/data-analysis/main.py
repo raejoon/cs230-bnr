@@ -55,7 +55,8 @@ def get_trajectory_to_failures(traj_to_asts, correct_set):
 
         # Check if succeeds, it does not submit another failed submission
         if 0 in traj_to_failures_map[tid]:
-            assert(traj_to_failures_map[tid][-1] == 0)
+            if traj_to_failures_map[tid][-1] != 0:
+                continue
     return traj_to_failures_map
 
 def get_trajectory_to_future_failures(traj_to_failures, window=1):
@@ -99,7 +100,7 @@ def report_data_balance(Y, imagepath):
     #plt.savefig(imagepath)
 
 if __name__=="__main__":
-    rootpath = "../anonymizeddata/data/hoc4/"
+    rootpath = "../anonymizeddata/data/hoc18/"
     ast_dirpath = os.path.join(rootpath, "asts")
     trajectory_dirpath = os.path.join(rootpath, "trajectories")
     result_filepath = os.path.join(rootpath, "asts/unitTestResults.txt")
@@ -117,6 +118,6 @@ if __name__=="__main__":
 
     report_data_balance(fail_matrix[:,np.arange(10)], "fail_balance.png")
     report_data_balance(future_matrix[:,np.arange(10)], "fail_win_2_balance.png")
-    np.save("traj_ast_matrix.npy", ast_matrix)
-    np.save("traj_fail_matrix.npy", fail_matrix)
-    np.save("traj_fail_window_2_matrix.npy", future_matrix)
+    np.save("hoc18_traj_ast_matrix.npy", ast_matrix)
+    np.save("hoc18_traj_fail_matrix.npy", fail_matrix)
+    np.save("hoc18_traj_fail_window_2_matrix.npy", future_matrix)
