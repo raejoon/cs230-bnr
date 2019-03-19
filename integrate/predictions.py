@@ -2,7 +2,8 @@ import os
 import numpy as np
 import keras
 from keras.models import Sequential
-from keras.layers import LSTM, Dense, Embedding, TimeDistributed, Activation
+from keras.layers \
+    import LSTM, Dense, Embedding, TimeDistributed, Activation, Reshape
 import utils
 import keras_metrics as km
 import matplotlib.pyplot as plt
@@ -22,12 +23,15 @@ class History(keras.callbacks.Callback):
 
     def _get_recall(self, Y_true, Y_pred, p):
         P = 0.5 ** p
-        num_students, num_asts, _ = np.shape(Y_true)
+        num_students, num_asts = np.shape(Y_true)
 
         Y_true_flat = Y_true.flatten()
         Y_pred_flat = 1 * (Y_pred.flatten() > P)
         
         positive_mask = (Y_true_flat == 1.)
+        if not np.any(positive_mask):
+            return 0
+
         return np.mean(Y_pred_flat[positive_mask])
     
     def on_epoch_end(self, epoch, logs={}):
@@ -54,10 +58,11 @@ class History(keras.callbacks.Callback):
 
 def plot_recall_curves(history):
     for p in np.arange(1, 4):
-        P = 0.5 ** P
-        y_train = [history.recall_train[(P, e)] for e in range(history.epoch)]
+        P = 0.5 ** p
+        y_train = [history.recall_train[(p, e)] for e in range(1, history.epoch)]
+        print(y_train)
     
-        plt.plot(y_train, label="p_threshold: " + str(p))
+        plt.plot(y_train, label="p_threshold: " + str(P))
     
     plt.legend()
     plt.xlabel("Epoch")
@@ -128,8 +133,8 @@ def get_output_labels(X):
     pass
 
 def load_output_labels_npy(output_filepath):
-    Y = np.absolute(np.load(output_filepath)[:,1:] - 1)
-    return np.reshape(Y, (np.shape(Y)[0], np.shape(Y)[1], 1))
+    Y = np.load(output_filepath)
+    return Y
 
 ### Do not use these !!!! ###
 """
@@ -152,7 +157,8 @@ def load_output_labels_csv(output_csvpath):
 
 def create_baseline_model(X, embeddings_dim, embeddings_matrix=None):
     ast_dirpath = "anonymizeddata/data/hoc4/asts"
-    num_asts = max(utils.get_ast_ids(ast_dirpath)) + 1
+    #num_asts = max(utils.get_ast_ids(ast_dirpath)) + 1
+    num_asts = np.amax(X)
     num_trials = np.shape(X)[1]
     model = Sequential() 
     if embeddings_matrix is None:
@@ -168,6 +174,7 @@ def create_baseline_model(X, embeddings_dim, embeddings_matrix=None):
     model.add(embedding_layer)
     model.add(TimeDistributed(Dense(1)))
     model.add(Activation("sigmoid"))
+    model.add(Reshape((num_trials,)))
     model.compile(loss="binary_crossentropy", optimizer="adam",
                   metrics=["accuracy", km.binary_recall()])
     model.summary()
@@ -209,17 +216,50 @@ def create_nn_model(X, embeddings_dim, embeddings_matrix=None):
 def fit_model(model, X, Y, epochs=5):
     split_ind = int((1 - 0.1) * np.shape(X)[0])
     X_train = X[np.arange(split_ind), :]
-    Y_train = Y[np.arange(split_ind), :, :]
+    Y_train = Y[np.arange(split_ind), :]
     X_validate = X[np.arange(split_ind, np.shape(X)[0]), :]
-    Y_validate = Y[np.arange(split_ind, np.shape(Y)[0]), :, :]
-
-    custom_history = History(X_train, Y_train)
+    Y_validate = Y[np.arange(split_ind, np.shape(Y)[0]), :]
 
     history = model.fit(X_train, Y_train, 
                         validation_data=(X_validate, Y_validate), 
                         epochs=epochs, 
                         batch_size=16, 
-                        verbose=1, callbacks=[custom_history])
-    keras.backend.clear_session()
+                        verbose=1)
 
-    return custom_history
+    return history, X_train, Y_train, X_validate, Y_validate
+
+
+def _get_recall_from_vectors(y_true, y_pred):
+    positive_mask = (y_true == 1.)
+    if not np.any(positive_mask):
+        return 0
+    return np.mean(y_pred[positive_mask])
+
+
+def plot_timestep_recall(model, X_train, Y_train, X_validate, Y_validate):
+    Y_true = Y_train
+    Y_pred = model.predict(X_train)
+    Y_pred = 1 * (Y_pred > 0.5)
+
+    recalls = [_get_recall_from_vectors(Y_true[:, ind], Y_pred[:, ind]) \
+                    for ind in range(np.shape(X_train)[1])]
+    print(recalls)
+    plt.plot(recalls, label="Training set")
+
+    Y_true = Y_validate
+    Y_pred = model.predict(X_validate)
+    Y_pred = 1 * (Y_pred > 0.5)
+
+    recalls = [_get_recall_from_vectors(Y_true[:, ind], Y_pred[:, ind]) \
+                    for ind in range(np.shape(X_validate)[1])]
+    print(recalls)
+    plt.plot(recalls, label="Validation set")
+    plt.legend()
+    plt.xlabel("Timesteps")
+    plt.ylabel("Recall")
+    plt.ylim((0, 1.02))
+
+    plt.savefig("recall_over_time.png") 
+
+    
+
