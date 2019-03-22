@@ -105,11 +105,12 @@ if __name__=="__main__":
     trajectory_dirpath = os.path.join(rootpath, "trajectories")
     result_filepath = os.path.join(rootpath, "asts/unitTestResults.txt")
     
+    window = 128
     ast_ids = get_ast_ids(ast_dirpath)
     correct_set = get_correct_asts(result_filepath)
     traj_to_asts, maxlen = get_trajectory_to_asts(trajectory_dirpath, ast_ids)
     traj_to_fails = get_trajectory_to_failures(traj_to_asts, correct_set) 
-    traj_to_futures = get_trajectory_to_future_failures(traj_to_fails, 2)
+    traj_to_futures = get_trajectory_to_future_failures(traj_to_fails, window)
 
     ast_matrix = map_to_matrix(traj_to_asts, maxlen) + 1
     fail_matrix = map_to_matrix(traj_to_fails, maxlen)
@@ -120,4 +121,4 @@ if __name__=="__main__":
     report_data_balance(future_matrix[:,np.arange(10)], "fail_win_2_balance.png")
     np.save("hoc18_traj_ast_matrix.npy", ast_matrix)
     np.save("hoc18_traj_fail_matrix.npy", fail_matrix)
-    np.save("hoc18_traj_fail_window_2_matrix.npy", future_matrix)
+    np.save("hoc18_traj_fail_window_%d_matrix.npy" % window, future_matrix)
